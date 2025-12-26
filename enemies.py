@@ -7,6 +7,7 @@ import math
 import random
 from settings import *
 from sprites import create_slime_sprite, create_bat_sprite, create_knight_sprite, create_cannon_sprite
+from introspection import introspect
 
 
 class Enemy(pygame.sprite.Sprite):
@@ -107,7 +108,9 @@ class Enemy(pygame.sprite.Sprite):
         if self.hurt_timer > 0 and self.frame % 4 < 2:
             return
         
-        surface.blit(self.image, (draw_x, draw_y))
+        introspect.draw(surface, self.image, (draw_x, draw_y), f"enemy_{self.enemy_type}",
+                       {"type": self.enemy_type, "health": self.health, "max_health": self.max_health,
+                        "state": self.state, "damage": self.damage})
         
         # Draw health bar for tough enemies
         if self.max_health > 2:
@@ -439,6 +442,13 @@ class Cannon(Enemy):
         
         # Draw boss health bar at top of screen
         self.draw_boss_health_bar(surface)
+        
+        # Track the boss health bar region for introspection
+        introspect.track_region(
+            pygame.Rect(SCREEN_WIDTH // 2 - 260, 45, 520, 80),
+            "boss_health_bar",
+            {"phase": self.phase, "health": self.health, "max_health": self.max_health}
+        )
     
     def draw_boss_health_bar(self, surface):
         """Draw large boss health bar at top"""
@@ -579,7 +589,8 @@ class CannonBall(pygame.sprite.Sprite):
     def draw(self, surface, camera_offset=(0, 0)):
         draw_x = self.rect.x - camera_offset[0]
         draw_y = self.rect.y - camera_offset[1]
-        surface.blit(self.image, (draw_x, draw_y))
+        introspect.draw(surface, self.image, (draw_x, draw_y), "cannon_ball",
+                       {"damage": self.damage, "lifetime": self.lifetime})
 
 
 def create_enemy(enemy_type, x, y):

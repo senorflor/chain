@@ -5,6 +5,7 @@ User Interface elements for Chain
 import pygame
 from settings import *
 from sprites import create_heart_sprite, create_magic_sprite
+from introspection import introspect
 
 
 class UI:
@@ -48,21 +49,27 @@ class UI:
         panel_height = heart_h + 16
         
         # Draw panel background
-        pygame.draw.rect(surface, (*DARK_BLUE[:3], 200), (x - 8, y - 8, panel_width, panel_height))
-        pygame.draw.rect(surface, RED, (x - 8, y - 8, panel_width, panel_height), 2)
+        panel_rect = pygame.Rect(x - 8, y - 8, panel_width, panel_height)
+        pygame.draw.rect(surface, (*DARK_BLUE[:3], 200), panel_rect)
+        pygame.draw.rect(surface, RED, panel_rect, 2)
+        introspect.track_region(panel_rect, "ui_health_panel",
+                               {"current": current, "maximum": maximum})
         
         # Draw label
         label = self.font_tiny.render("HP", True, RED)
-        surface.blit(label, (x - 4, y - 6))
+        introspect.draw(surface, label, (x - 4, y - 6), "ui_hp_label")
         
         # Draw hearts
         for i in range(maximum):
             if i < current:
                 sprite = self.heart_full
+                state = "full"
             else:
                 sprite = self.heart_empty
+                state = "empty"
             
-            surface.blit(sprite, (x + 24 + i * (heart_w + 6), y))
+            introspect.draw(surface, sprite, (x + 24 + i * (heart_w + 6), y), 
+                           f"ui_heart_{i}", {"state": state, "index": i})
     
     def draw_magic_bar(self, surface, current, maximum, x=16, y=60):
         """Draw magic crystals with background panel"""
@@ -73,21 +80,27 @@ class UI:
         panel_height = magic_h + 16
         
         # Draw panel background
-        pygame.draw.rect(surface, (*DARK_BLUE[:3], 200), (x - 8, y - 8, panel_width, panel_height))
-        pygame.draw.rect(surface, CYAN, (x - 8, y - 8, panel_width, panel_height), 2)
+        panel_rect = pygame.Rect(x - 8, y - 8, panel_width, panel_height)
+        pygame.draw.rect(surface, (*DARK_BLUE[:3], 200), panel_rect)
+        pygame.draw.rect(surface, CYAN, panel_rect, 2)
+        introspect.track_region(panel_rect, "ui_magic_panel",
+                               {"current": current, "maximum": maximum})
         
         # Draw label
         label = self.font_tiny.render("MP", True, CYAN)
-        surface.blit(label, (x - 4, y - 6))
+        introspect.draw(surface, label, (x - 4, y - 6), "ui_mp_label")
         
         # Draw crystals
         for i in range(maximum):
             if i < current:
                 sprite = self.magic_full
+                state = "full"
             else:
                 sprite = self.magic_empty
+                state = "empty"
             
-            surface.blit(sprite, (x + 24 + i * (magic_w + 6), y))
+            introspect.draw(surface, sprite, (x + 24 + i * (magic_w + 6), y),
+                           f"ui_magic_{i}", {"state": state, "index": i})
     
     def draw_spell_selector(self, surface, selected_spell, spell_manager, x=16, y=110):
         """Draw spell selection UI with background panel"""
@@ -97,12 +110,15 @@ class UI:
         panel_height = slot_height + 40
         
         # Draw panel background
-        pygame.draw.rect(surface, (*DARK_BLUE[:3], 200), (x - 8, y - 8, panel_width, panel_height))
-        pygame.draw.rect(surface, YELLOW, (x - 8, y - 8, panel_width, panel_height), 2)
+        panel_rect = pygame.Rect(x - 8, y - 8, panel_width, panel_height)
+        pygame.draw.rect(surface, (*DARK_BLUE[:3], 200), panel_rect)
+        pygame.draw.rect(surface, YELLOW, panel_rect, 2)
+        introspect.track_region(panel_rect, "ui_spell_panel",
+                               {"selected": selected_spell})
         
         # Draw label
         label = self.font_tiny.render("SPELLS", True, YELLOW)
-        surface.blit(label, (x, y - 6))
+        introspect.draw(surface, label, (x, y - 6), "ui_spells_label")
         
         for i, (name, color) in enumerate(zip(self.spell_names, self.spell_colors)):
             # Draw slot background
@@ -110,12 +126,17 @@ class UI:
             slot_y = y + 12
             
             # Draw slot base
-            pygame.draw.rect(surface, DARK_BROWN, (slot_x, slot_y, slot_width - 8, slot_height - 10))
+            slot_rect = pygame.Rect(slot_x, slot_y, slot_width - 8, slot_height - 10)
+            pygame.draw.rect(surface, DARK_BROWN, slot_rect)
+            
+            is_selected = i == selected_spell
+            introspect.track_region(slot_rect, f"ui_spell_slot_{name.lower()}",
+                                   {"spell": name, "index": i, "selected": is_selected})
             
             # Highlight selected with glow effect
-            if i == selected_spell:
+            if is_selected:
                 pygame.draw.rect(surface, color, (slot_x - 3, slot_y - 3, slot_width - 2, slot_height - 4), 3)
-                pygame.draw.rect(surface, WHITE, (slot_x, slot_y, slot_width - 8, slot_height - 10), 1)
+                pygame.draw.rect(surface, WHITE, slot_rect, 1)
             
             # Draw spell icon area
             pygame.draw.rect(surface, color, (slot_x + 4, slot_y + 4, slot_width - 16, 24))
@@ -123,14 +144,17 @@ class UI:
             # Draw spell initial/abbreviation
             if name == 'Thundr2':
                 spell_text = self.font_small.render("T2", True, DARK_BLUE)
-                surface.blit(spell_text, (slot_x + 10, slot_y + 8))
+                introspect.draw(surface, spell_text, (slot_x + 10, slot_y + 8), 
+                               f"ui_spell_text_{name.lower()}")
             else:
                 spell_text = self.font_medium.render(name[0], True, DARK_BLUE)
-                surface.blit(spell_text, (slot_x + 12, slot_y + 6))
+                introspect.draw(surface, spell_text, (slot_x + 12, slot_y + 6),
+                               f"ui_spell_text_{name.lower()}")
             
             # Draw spell number
             num_text = self.font_tiny.render(str(i + 1), True, LIGHT_GRAY)
-            surface.blit(num_text, (slot_x + 16, slot_y + 30))
+            introspect.draw(surface, num_text, (slot_x + 16, slot_y + 30),
+                           f"ui_spell_number_{i+1}")
         
         # Show active buffs below spell bar
         active_buffs = spell_manager.get_active_buffs()
@@ -142,7 +166,8 @@ class UI:
                 buff_color = CYAN if buff == 'shield' else LIME
                 pygame.draw.rect(surface, buff_color, (buff_x, buff_y + 4, 12, 12))
                 buff_text = self.font_tiny.render(buff.upper(), True, buff_color)
-                surface.blit(buff_text, (buff_x + 16, buff_y + 4))
+                introspect.draw(surface, buff_text, (buff_x + 16, buff_y + 4),
+                               f"ui_buff_{buff}", {"buff_type": buff})
                 buff_x += 80
     
     def draw_score(self, surface, score, x=None, y=16):
@@ -156,11 +181,14 @@ class UI:
         panel_height = 40
         
         # Draw panel background
-        pygame.draw.rect(surface, (*DARK_BLUE[:3], 200), (x - 8, y - 8, panel_width, panel_height))
-        pygame.draw.rect(surface, YELLOW, (x - 8, y - 8, panel_width, panel_height), 2)
+        panel_rect = pygame.Rect(x - 8, y - 8, panel_width, panel_height)
+        pygame.draw.rect(surface, (*DARK_BLUE[:3], 200), panel_rect)
+        pygame.draw.rect(surface, YELLOW, panel_rect, 2)
+        introspect.track_region(panel_rect, "ui_score_panel", {"score": score})
         
         score_text = self.font_medium.render(score_str, True, YELLOW)
-        surface.blit(score_text, (x + 4, y + 2))
+        introspect.draw(surface, score_text, (x + 4, y + 2), "ui_score_text",
+                       {"score": score})
     
     def draw_level_name(self, surface, name, x=None, y=None):
         """Draw level name at top center with prominent styling"""
@@ -219,22 +247,27 @@ class UI:
     def draw_menu(self, surface, title, options, selected):
         """Draw a menu screen"""
         # Title
-        title_text = self.font_large.render(title, True, YELLOW)
-        title_rect = title_text.get_rect(center=(SCREEN_WIDTH // 2, 150))
-        surface.blit(title_text, title_rect)
+        if title:
+            title_text = self.font_large.render(title, True, YELLOW)
+            title_rect = title_text.get_rect(center=(SCREEN_WIDTH // 2, 150))
+            introspect.draw(surface, title_text, title_rect.topleft, "ui_menu_title",
+                           {"text": title})
         
         # Options
         for i, option in enumerate(options):
             if i == selected:
                 color = YELLOW
                 prefix = "> "
+                is_selected = True
             else:
                 color = WHITE
                 prefix = "  "
+                is_selected = False
             
             option_text = self.font_medium.render(prefix + option, True, color)
             option_rect = option_text.get_rect(center=(SCREEN_WIDTH // 2, 250 + i * 50))
-            surface.blit(option_text, option_rect)
+            introspect.draw(surface, option_text, option_rect.topleft, f"ui_menu_option_{option.lower().replace(' ', '_')}",
+                           {"option": option, "index": i, "selected": is_selected})
     
     def draw_game_over(self, surface, score):
         """Draw game over screen"""

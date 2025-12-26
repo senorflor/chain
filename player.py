@@ -8,6 +8,7 @@ from sprites import (create_chain_sprite, create_chain_attack_sprite,
                      create_chain_up_attack_sprite, create_chain_down_attack_sprite,
                      create_chain_world_sprite)
 from spells import SpellManager
+from introspection import introspect
 
 
 class Player(pygame.sprite.Sprite):
@@ -335,6 +336,16 @@ class Player(pygame.sprite.Sprite):
         if self.is_hurt and self.frame % 4 < 2:
             return  # Don't draw (flashing effect)
         
+        # Determine sprite state for introspection metadata
+        sprite_state = "idle"
+        if self.is_attacking:
+            if self.is_up_attack:
+                sprite_state = "up_attack"
+            elif self.is_down_attack:
+                sprite_state = "down_attack"
+            else:
+                sprite_state = "attack"
+        
         # Rainbow shimmer effect when in invincible mode
         if self.invincible_mode:
             self.invincible_frame += 1
@@ -364,9 +375,13 @@ class Player(pygame.sprite.Sprite):
             glow_surface = pygame.Surface((rainbow_img.get_width() + 8, rainbow_img.get_height() + 8), pygame.SRCALPHA)
             glow_surface.fill((r, g, b, 50))
             surface.blit(glow_surface, (draw_x - 4, draw_y - 4))
-            surface.blit(rainbow_img, (draw_x, draw_y))
+            introspect.draw(surface, rainbow_img, (draw_x, draw_y), "player_chain",
+                           {"state": sprite_state, "mode": self.mode, "invincible": True,
+                            "health": self.health, "magic": self.magic})
         else:
-            surface.blit(self.image, (draw_x, draw_y))
+            introspect.draw(surface, self.image, (draw_x, draw_y), "player_chain",
+                           {"state": sprite_state, "mode": self.mode, "facing_right": self.facing_right,
+                            "health": self.health, "magic": self.magic})
         
         # Draw spell effects
         player_center = (

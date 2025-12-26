@@ -8,6 +8,7 @@ from settings import *
 from sprites import create_tile_sprite
 from enemies import create_enemy
 from items import create_item, ItemManager
+from introspection import introspect
 
 
 class Tile(pygame.sprite.Sprite):
@@ -469,6 +470,13 @@ class Level:
         # Draw background
         self.draw_background(surface)
         
+        # Track background region
+        introspect.track_region(
+            pygame.Rect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT),
+            f"level_background_{self.level_type}",
+            {"level_id": self.level_id, "level_type": self.level_type}
+        )
+        
         # Draw tiles
         for tile in self.tiles:
             draw_x = tile.rect.x - camera_offset[0]
@@ -477,20 +485,24 @@ class Level:
             # Only draw visible tiles
             if (-TILE_SIZE * PIXEL_SCALE < draw_x < SCREEN_WIDTH + TILE_SIZE * PIXEL_SCALE and
                 -TILE_SIZE * PIXEL_SCALE < draw_y < SCREEN_HEIGHT + TILE_SIZE * PIXEL_SCALE):
-                surface.blit(tile.image, (draw_x, draw_y))
+                introspect.draw(surface, tile.image, (draw_x, draw_y), 
+                               f"tile_{tile.tile_type}",
+                               {"tile_type": tile.tile_type, "world_x": tile.rect.x, "world_y": tile.rect.y})
         
         # Draw exit
         if self.exit_rect:
             exit_x = self.exit_rect.x - camera_offset[0]
             exit_y = self.exit_rect.y - camera_offset[1]
-            pygame.draw.rect(surface, YELLOW, (exit_x, exit_y, 
-                           self.exit_rect.width, self.exit_rect.height), 2)
+            exit_screen_rect = pygame.Rect(exit_x, exit_y, self.exit_rect.width, self.exit_rect.height)
+            pygame.draw.rect(surface, YELLOW, exit_screen_rect, 2)
             # Draw arrow
             pygame.draw.polygon(surface, YELLOW, [
                 (exit_x + 16, exit_y + 10),
                 (exit_x + 26, exit_y + 25),
                 (exit_x + 6, exit_y + 25)
             ])
+            introspect.track_region(exit_screen_rect, "level_exit",
+                                   {"level_id": self.level_id})
         
         # Draw items
         self.item_manager.draw(surface, camera_offset)

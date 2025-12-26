@@ -5,6 +5,7 @@ World Map for traversing between adventures
 import pygame
 from settings import *
 from sprites import create_world_map_tile
+from introspection import introspect
 
 
 class WorldMapTile:
@@ -30,7 +31,9 @@ class WorldMapTile:
     def draw(self, surface, camera_offset=(0, 0)):
         draw_x = self.rect.x - camera_offset[0]
         draw_y = self.rect.y - camera_offset[1]
-        surface.blit(self.image, (draw_x, draw_y))
+        introspect.draw(surface, self.image, (draw_x, draw_y), f"world_tile_{self.tile_type}",
+                       {"tile_type": self.tile_type, "grid_x": self.grid_x, "grid_y": self.grid_y,
+                        "walkable": self.walkable})
 
 
 class LevelMarker:
@@ -78,9 +81,15 @@ class LevelMarker:
             completed_img = pygame.Surface(self.image.get_size(), pygame.SRCALPHA)
             completed_img.blit(self.image, (0, 0))
             completed_img.fill((*LIME[:3], 100), special_flags=pygame.BLEND_RGBA_ADD)
-            surface.blit(completed_img, (draw_x, draw_y + pulse))
+            introspect.draw(surface, completed_img, (draw_x, draw_y + pulse), 
+                           f"level_marker_{self.level_id}",
+                           {"level_id": self.level_id, "level_name": self.level_name,
+                            "completed": True, "unlocked": True})
         else:
-            surface.blit(self.image, (draw_x, draw_y + pulse))
+            introspect.draw(surface, self.image, (draw_x, draw_y + pulse),
+                           f"level_marker_{self.level_id}",
+                           {"level_id": self.level_id, "level_name": self.level_name,
+                            "completed": False, "unlocked": True})
 
 
 class WorldMap:

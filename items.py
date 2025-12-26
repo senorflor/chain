@@ -8,6 +8,7 @@ from sprites import (
     create_food_sprite, create_magic_vial_sprite,
     create_heart_sprite, create_magic_sprite
 )
+from introspection import introspect
 
 
 class Item(pygame.sprite.Sprite):
@@ -49,7 +50,8 @@ class Item(pygame.sprite.Sprite):
         """Draw item"""
         draw_x = self.rect.x - camera_offset[0]
         draw_y = self.rect.y - camera_offset[1]
-        surface.blit(self.image, (draw_x, draw_y))
+        introspect.draw(surface, self.image, (draw_x, draw_y), f"item_{self.item_type}",
+                       {"item_type": self.item_type, "world_x": self.rect.x, "world_y": self.rect.y})
 
 
 class Food(Item):

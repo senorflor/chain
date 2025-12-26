@@ -6,6 +6,7 @@ import pygame
 import math
 from settings import *
 from sprites import create_fireball_sprite, create_thunder_sprite, create_shield_effect_sprite
+from introspection import introspect
 
 
 class Spell:
@@ -64,7 +65,9 @@ class ShieldSpell(Spell):
             # Center on player
             x = pos[0] - sprite.get_width() // 2
             y = pos[1] - sprite.get_height() // 2
-            surface.blit(sprite, (x, y))
+            introspect.draw(surface, sprite, (x, y), "spell_shield_effect",
+                           {"remaining_duration": self.remaining_duration, 
+                            "damage_reduction": SHIELD_DAMAGE_REDUCTION})
 
 
 class SwiftSpell(Spell):

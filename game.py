@@ -9,6 +9,7 @@ from world_map import WorldMap
 from level import Level
 from ui import UI
 from sounds import get_sound_manager
+from introspection import introspect
 
 
 class Game:
@@ -93,6 +94,10 @@ class Game:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.running = False
+            
+            # Handle introspection events (Cmd+click to inspect)
+            if introspect.handle_event(event):
+                continue  # Event was consumed by introspection
             
             self.events.append(event)
             
@@ -285,7 +290,15 @@ class Game:
     
     def draw(self):
         """Draw the current game state"""
+        # Begin introspection frame - clear tracking from previous frame
+        introspect.begin_frame()
+        
         self.screen.fill(DARK_BLUE)
+        introspect.track_region(
+            pygame.Rect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT),
+            "background",
+            {"color": "DARK_BLUE", "state": self.state}
+        )
         
         if self.state == STATE_MENU:
             self.draw_menu()
@@ -303,6 +316,9 @@ class Game:
         elif self.state == STATE_VICTORY:
             self.ui.draw_victory(self.screen, self.player.score if self.player else 0)
         
+        # Draw introspection overlay (shows element boundaries when enabled)
+        introspect.draw_overlay(self.screen)
+        
         pygame.display.flip()
     
     def draw_menu(self):
@@ -315,13 +331,15 @@ class Game:
         title_font = pygame.font.Font(None, 72)
         title_text = title_font.render("CHAIN", True, YELLOW)
         title_rect = title_text.get_rect(center=(SCREEN_WIDTH // 2, 120))
-        self.screen.blit(title_text, title_rect)
+        introspect.draw(self.screen, title_text, title_rect.topleft, "menu_title",
+                       {"text": "CHAIN", "font_size": 72})
         
         # Subtitle
         subtitle_font = pygame.font.Font(None, 32)
         subtitle = subtitle_font.render("Quest for the Lost Princess", True, CYAN)
         subtitle_rect = subtitle.get_rect(center=(SCREEN_WIDTH // 2, 170))
-        self.screen.blit(subtitle, subtitle_rect)
+        introspect.draw(self.screen, subtitle, subtitle_rect.topleft, "menu_subtitle",
+                       {"text": "Quest for the Lost Princess"})
         
         if self.showing_controls:
             self.draw_controls_screen()
@@ -336,7 +354,8 @@ class Game:
         big_chain = pygame.transform.scale(chain_sprite, 
                                           (chain_sprite.get_width() * 2, 
                                            chain_sprite.get_height() * 2))
-        self.screen.blit(big_chain, (100, SCREEN_HEIGHT - 200))
+        introspect.draw(self.screen, big_chain, (100, SCREEN_HEIGHT - 200), "menu_chain_sprite",
+                       {"sprite_function": "create_chain_sprite", "scale": 2})
     
     def draw_controls_screen(self):
         """Draw controls help screen"""
