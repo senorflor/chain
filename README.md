@@ -1,67 +1,126 @@
-# Chain - A 16-bit Adventure Side-Scroller
+# Chain - A Fully Introspectable 16-bit Adventure Game
 
-## Story
-Chain is on a quest to rescue the lost princess, kidnapped by the archenemy **Cannon**. 
-Navigate through dangerous lands, defeat enemies, and master magical spells to save her!
+> **Cmd+Click any element in the game to open its source code in Cursor.**
 
-## Gameplay
+This is a pygame side-scroller where every visual element is traceable back to its implementation. The game serves as both a playable adventure and a live, explorable codebase—perfect for learning game development or debugging rendering issues.
+
+---
+
+## 🔍 Introspection: The Main Feature
+
+### How It Works
+
+Every sprite, tile, UI element, and effect drawn to the screen is tracked with its source location. When you **Cmd+Click** (macOS) on anything in the game window, Cursor opens directly to the line of code that renders it.
+
+### Usage
+
+| Action | Result |
+|--------|--------|
+| **Cmd+Click** | Opens Cursor at the source code rendering the clicked element |
+| **Cmd+Shift+I** | Toggles debug overlay showing element boundaries and info |
+
+### What's Introspectable
+
+- **Player (Chain)** — sprite states, animations, movement
+- **Enemies** — slimes, bats, knights, boss (Cannon), projectiles
+- **UI Elements** — health bar, magic bar, spell selector, score, menus
+- **Tiles** — grass, brick, stone, water, platforms
+- **Items** — food, potions, heart containers, coins
+- **Spell Effects** — shield aura, fireballs, thunder strikes
+- **World Map** — terrain tiles, level markers
+
+### Example Output
+
+When you Cmd+click on Chain (the player), you'll see:
+
+```
+============================================================
+🔍 INTROSPECTION: Clicked on 'player_chain'
+============================================================
+
+📚 Element stack at this position (3 elements):
+  1. player_chain [z=45]
+      metadata: {'state': 'idle', 'mode': 'level', 'health': 4}
+  2. tile_grass [z=12]
+  3. level_background_forest [z=0]
+
+📍 Source stack for 'player_chain':
+  → player.py:369 (Player.draw)
+    game.py:383 (Game.draw_level)
+    game.py:306 (Game.draw)
+
+🚀 Opening in Cursor: cursor://file/.../player.py:369
+============================================================
+```
+
+### Debug Overlay (Cmd+Shift+I)
+
+The overlay visualizes:
+- **Element boundaries** — colored rectangles around all tracked elements
+- **Hover info** — element name, z-index, source file:line
+- **Element stack** — all overlapping elements at cursor position
+
+---
+
+## 🎮 The Game: Chain's Quest
+
+### Story
+Chain is on a quest to rescue the lost princess, kidnapped by the archenemy **Cannon**. Navigate through dangerous lands, defeat enemies, and master magical spells to save her!
 
 ### Controls
-- **Arrow Keys / WASD**: Move Chain
-- **Space**: Jump (in side-scroller mode)
-- **Z**: Attack
-- **X**: Cast selected spell
-- **1-4**: Select spell slot
-- **Enter**: Interact / Confirm
-- **ESC**: Pause / Back
-
-### Points System
-- **Health (❤️)**: Starts at 4 max. Depleted when hit by enemies.
-- **Magic (✨)**: Starts at 4 max. Depleted when casting spells.
-
-### Collectibles
-- **Food**: Restores health points
-- **Magic Vials**: Restores magic points
-- **Heart Containers**: Permanently increases max health
-- **Magic Bottles**: Permanently increases max magic
+| Key | Action |
+|-----|--------|
+| Arrow Keys / WASD | Move |
+| Space | Jump (in levels) |
+| Z | Attack |
+| X | Cast spell |
+| 1-5 | Select spell |
+| Enter | Interact |
+| ESC | Pause |
+| I | Toggle invincibility (cheat) |
+| C | Complete level (cheat) |
 
 ### Spells
-1. **Shield**: Reduces incoming damage (buff)
-2. **Swift**: Increases movement and jump speed (buff)
-3. **Fireball**: Ranged offensive spell
-4. **Thunder**: Area-of-effect damage spell
+1. **Shield** — Reduces incoming damage
+2. **Swift** — Increases speed and jump height  
+3. **Fireball** — Ranged projectile
+4. **Thunder** — Area damage
+5. **Thunder 2** — Powerful downward strike
 
 ### Enemies
-Various enemies with different behaviors and difficulty levels:
-- **Slimes**: Easy, slow-moving
-- **Bats**: Medium, flying erratic patterns
-- **Knights**: Hard, shielded and aggressive
-- **Cannon** (Boss): The archenemy!
+- **Slimes** — Hop toward you
+- **Bats** — Fly erratically, swoop when close
+- **Knights** — Shielded, charge attacks
+- **Cannon** — The boss with three phases
 
-## Installation
+---
+
+## 🛠 Installation
 
 ```bash
 pip install -r requirements.txt
 python main.py
 ```
 
-## Project Structure
+## 📁 Project Structure
+
 ```
 chain/
-├── main.py           # Game entry point
-├── settings.py       # Game constants and configuration
-├── game.py           # Main game class and loop
-├── player.py         # Chain player class
-├── enemies.py        # Enemy classes
-├── items.py          # Collectible items
-├── spells.py         # Spell system
-├── world_map.py      # Top-view world map
-├── level.py          # Side-scroller level
-├── sprites.py        # Sprite rendering utilities
-├── ui.py             # User interface elements
-└── assets/           # Game assets (generated procedurally)
+├── main.py           # Entry point
+├── game.py           # Main loop, state management
+├── player.py         # Chain (the hero)
+├── enemies.py        # Slime, Bat, Knight, Cannon
+├── items.py          # Collectibles
+├── spells.py         # Magic system
+├── level.py          # Side-scroller levels
+├── world_map.py      # Overworld navigation
+├── sprites.py        # Procedural pixel art
+├── ui.py             # HUD and menus
+├── settings.py       # Constants
+├── sounds.py         # Audio (placeholder)
+└── introspection.py  # ⭐ The introspection system
 ```
 
-## 16-bit Aesthetic
-The game features procedurally generated pixel art in a classic 16-bit style,
-with vibrant colors and chunky sprites reminiscent of SNES/Genesis era games.
+## 🎨 16-bit Aesthetic
+
+All sprites are procedurally generated pixel art in a classic 16-bit style—no external assets required. The palette and chunky pixels evoke SNES/Genesis era games.
